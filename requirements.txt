@@ -28,6 +28,7 @@ debugpy==1.8.0
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
+eli5==0.13.0
 executing==2.0.1
 fastjsonschema==2.19.0
 fastprogress==1.0.3
@@ -46,7 +47,8 @@ httpcore==1.0.5
 httpx==0.27.0
 idna==3.6
 ipykernel==6.27.1
-ipython==8.18.1
+ipython==8.26.0
+ipython-genutils==0.2.0
 ipywidgets==8.1.1
 isoduration==20.11.0
 jedi==0.19.1
@@ -58,10 +60,14 @@ jsonschema==4.20.0
 jsonschema-specifications==2023.11.2
 jupyter==1.0.0
 jupyter-console==6.6.3
+jupyter-contrib-core==0.4.2
+jupyter-contrib-nbextensions==0.7.0
 jupyter-events==0.9.0
+jupyter-highlight-selected-word==0.2.0
 jupyter-lsp==2.2.1
 jupyter_client==8.6.0
 jupyter_core==5.5.0
+jupyter_nbextensions_configurator==0.6.4
 jupyter_server==2.12.1
 jupyter_server_terminals==0.5.0
 jupyterlab==4.2.4
@@ -148,6 +154,7 @@ soupsieve==2.5
 SQLAlchemy==2.0.28
 stack-data==0.6.3
 statsmodels==0.14.1
+tabulate==0.9.0
 tenacity==8.2.3
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
