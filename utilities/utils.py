@@ -86,7 +86,7 @@ def create_ensemble_model(top_models, calibration=True):
     return ensemble_model
 
 
-def evaluate_models(models, model_names, X_val, y_val, n_bootstrap=1000):
+def evaluate_models_with_ci(models, model_names, X_val, y_val, n_bootstrap=1000):
     """
     Evaluate a list of models and return the predicted probabilities and evaluation metrics, 
     including standard deviation and 95% CI for the metrics.
@@ -99,10 +99,10 @@ def evaluate_models(models, model_names, X_val, y_val, n_bootstrap=1000):
     n_bootstrap (int): Number of bootstrap resamples.
 
     Returns:
-    pd.DataFrame: DataFrame containing predicted probabilities.
+    pd.DataFrame: DataFrame containing predicted probabilities and true labels.
     pd.DataFrame: DataFrame containing evaluation metrics with std dev and 95% CI.
     """
-    probabilities = {}
+    probabilities = {'true_labels': y_val}
     metrics = []
 
     for model, name in zip(models, model_names):
@@ -130,7 +130,7 @@ def evaluate_models(models, model_names, X_val, y_val, n_bootstrap=1000):
             precisions.append(precision_score(y_resample, y_pred_resample))
             recalls.append(recall_score(y_resample, y_pred_resample))
             f1_scores.append(f1_score(y_resample, y_pred_resample))
-        print(f"Bootstrapong Evaluation done for -- {name}")
+        print(f"Bootstrap Evaluation done for -- {name}")
 
         # Compute mean, std dev, and 95% CI for each metric
         metrics.append({
