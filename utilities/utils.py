@@ -81,7 +81,7 @@ def create_ensemble_model(top_models, calibration=True):
         estimators = [(f'model_{i}', model_info['model_non_calibrated']) for i, model_info in enumerate(top_models)]
 
     # Create a voting classifier
-    ensemble_model = VotingClassifier(estimators=estimators, voting='soft')
+    ensemble_model = VotingClassifier(estimators=estimators, voting='soft',)
 
     return ensemble_model
 
@@ -155,6 +155,53 @@ def evaluate_models_with_ci(models, model_names, X_val, y_val, n_bootstrap=1000)
             'f1_score_std': np.std(f1_scores),
             'f1_score_ci_lower': np.percentile(f1_scores, 2.5),
             'f1_score_ci_upper': np.percentile(f1_scores, 97.5),
+        })
+
+    probabilities_df = pd.DataFrame(probabilities)
+    metrics_df = pd.DataFrame(metrics)
+
+    return probabilities_df, metrics_df
+
+
+def evaluate_models(models, model_names, X_val, y_val):
+    """
+    Evaluate a list of models and return the predicted probabilities and evaluation metrics.
+
+    Parameters:
+    models (list): List of trained ensemble models.
+    model_names (list): List of model names corresponding to the models.
+    X_val (pd.DataFrame): Validation feature set.
+    y_val (pd.Series): True labels for the validation set.
+
+    Returns:
+    pd.DataFrame: DataFrame containing predicted probabilities and true labels.
+    pd.DataFrame: DataFrame containing evaluation metrics.
+    """
+    probabilities = {'true_labels': y_val}
+    metrics = []
+
+    for model, name in zip(models, model_names):
+        y_proba = model.predict_proba(X_val)[:, 1]
+        y_pred = model.predict(X_val)
+
+        # Store predicted probabilities
+        probabilities[f'{name}_proba'] = y_proba
+
+        # Compute evaluation metrics
+        fpr, tpr, _ = roc_curve(y_val, y_proba)
+        roc_auc = auc(fpr, tpr)
+        accuracy = accuracy_score(y_val, y_pred)
+        precision = precision_score(y_val, y_pred)
+        recall = recall_score(y_val, y_pred)
+        f1 = f1_score(y_val, y_pred)
+
+        metrics.append({
+            'model': name,
+            'roc_auc': roc_auc,
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1
         })
 
     probabilities_df = pd.DataFrame(probabilities)
