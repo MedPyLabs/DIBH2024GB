@@ -136,7 +136,7 @@ def evaluate_models_with_ci(models, model_names, X_val, y_val, n_bootstrap=1000)
     metrics = []
 
     for model, name in zip(models, model_names):
-        y_proba = model.predict_proba(X_val)[:, 1]
+        y_proba = model.predict_proba(X_val)
         y_pred = model.predict(X_val)
 
         # Store predicted probabilities
@@ -151,7 +151,7 @@ def evaluate_models_with_ci(models, model_names, X_val, y_val, n_bootstrap=1000)
 
         for i in range(n_bootstrap):
             X_resample, y_resample = resample(X_val, y_val)
-            y_proba_resample = model.predict_proba(X_resample)[:, 1]
+            y_proba_resample = model.predict_proba(X_resample)
             y_pred_resample = model.predict(X_resample)
 
             fpr, tpr, _ = roc_curve(y_resample, y_proba_resample)
@@ -211,14 +211,19 @@ def evaluate_models(models, model_names, X_val, y_val):
     metrics = []
 
     for model, name in zip(models, model_names):
-        y_proba = model.predict_proba(X_val)[:, 1]
+        y_proba = model.predict_proba(X_val)
         y_pred = model.predict(X_val)
 
-        # Store predicted probabilities
-        probabilities[f'{name}_proba'] = y_proba
+        
 
         # Compute evaluation metrics
-        fpr, tpr, _ = roc_curve(y_val, y_proba)
+        if len(y_proba.shape) > 1:
+            # Store predicted probabilities
+            probabilities[f'{name}_proba'] = y_proba[:,1]
+            fpr, tpr, _ = roc_curve(y_val, y_proba[:,1])
+        else:
+            probabilities[f'{name}_proba'] = y_proba
+            fpr, tpr, _ = roc_curve(y_val, y_proba)
         roc_auc = auc(fpr, tpr)
         accuracy = accuracy_score(y_val, y_pred)
         precision = precision_score(y_val, y_pred)
@@ -344,3 +349,12 @@ class CustomVotingClassifier(BaseEstimator, ClassifierMixin):
         # Majority vote with tie-breaking to class 0
         majority_vote = np.apply_along_axis(lambda x: np.argmax(np.bincount(x, minlength=2)), axis=0, arr=predictions)
         return majority_vote
+
+    def predict_proba(self, X):
+        model_key = 'model_calibrated' if self.use_calibrated else 'model_non_calibrated'
+        # Collect the probability predictions from each model
+        probas = np.array([model_info[model_key].predict_proba(X)[:, 1] 
+                           for model_info in self.models])
+        # Average the probabilities
+        avg_probas = np.mean(probas, axis=0)
+        return avg_probas
